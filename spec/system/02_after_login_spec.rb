@@ -162,8 +162,37 @@ describe '[STEP2] ユーザログイン後のテスト' do
         expect(page).to have_button 'Create Book'
       end
     end #サイドバーの確認
-
-
+    
+    context '投稿成功のテスト' do
+      before do
+        fill_in 'book[title]', with: Faker::Lorem.characters(number: 5)
+        fill_in 'book[body]', with: Faker::Lorem.characters(number: 20)
+      end
+      
+      it '自分の新しい投稿が正しく保存される' do
+        expect { click_button 'Create Book' }.to change(user.books, :count).by(1)
+      end
+    end #
+    
+    context '編集リンクのテスト' do
+      it '編集画面に遷移する' do
+        click_link 'Edit'
+        expect(current_path).to eq '/books/' + book.id.to_s + '/edit'
+      end
+    end #編集リンクのテスト
+    
+    context '削除リンクのテスト' do
+      before do
+        click_link 'Destroy'
+      end
+      
+      it '正しく削除される' do
+        expect(Book.where(id: book.id).count).to eq 0
+      end
+      it 'リダイレクト先が、投稿一覧画面になっている' do
+        expect(current_path).to eq '/books'
+      end
+    end #削除リンクのテスト
   end #自分の投稿詳細画面のテスト
 
 
