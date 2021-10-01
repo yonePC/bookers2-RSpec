@@ -150,7 +150,7 @@ describe '[STEP2] ユーザログイン後のテスト' do
         expect(page).to have_field 'book[title]'
       end
       it 'titleフォームに値が入っていない' do
-        expect(find_field('book[title]').text).to be_blank 
+        expect(find_field('book[title]').text).to be_blank
       end
       it 'opinionフォームが表示されている' do
         expect(page).to have_field 'book[body]'
@@ -162,30 +162,30 @@ describe '[STEP2] ユーザログイン後のテスト' do
         expect(page).to have_button 'Create Book'
       end
     end #サイドバーの確認
-    
+
     context '投稿成功のテスト' do
       before do
         fill_in 'book[title]', with: Faker::Lorem.characters(number: 5)
         fill_in 'book[body]', with: Faker::Lorem.characters(number: 20)
       end
-      
+
       it '自分の新しい投稿が正しく保存される' do
         expect { click_button 'Create Book' }.to change(user.books, :count).by(1)
       end
     end #
-    
+
     context '編集リンクのテスト' do
       it '編集画面に遷移する' do
         click_link 'Edit'
         expect(current_path).to eq '/books/' + book.id.to_s + '/edit'
       end
     end #編集リンクのテスト
-    
+
     context '削除リンクのテスト' do
       before do
         click_link 'Destroy'
       end
-      
+
       it '正しく削除される' do
         expect(Book.where(id: book.id).count).to eq 0
       end
@@ -194,6 +194,57 @@ describe '[STEP2] ユーザログイン後のテスト' do
       end
     end #削除リンクのテスト
   end #自分の投稿詳細画面のテスト
+
+  describe '自分の投稿編集画面のテスト' do
+    before do
+      visit edit_book_path(book)
+    end
+
+    context '表示の確認' do
+      it 'URLが正しい' do
+        expect(current_path).to eq '/books/' + book.id.to_s + '/edit'
+      end
+      it '「Editing Book」と表示される' do
+        expect(page).to have_content 'Editing Book'
+      end
+      it 'title編集フォームが表示される' do
+        expect(page).to have_field 'book[title]', with: book.title
+      end
+      it 'opinion編集フォームが表示される' do
+        expect(page).to have_field 'book[body]', with: book.body
+      end
+      it 'Update Bookボタンが表示される' do
+        expect(page).to have_button 'Update Book'
+      end
+      it 'Showリンクが表示される' do
+        expect(page).to have_link 'Show', href: book_path(book)
+      end
+      it 'Backリンクが表示される' do
+        expect(page).to have_link 'Back', href: books_path
+      end
+    end #表示の確認
+    
+    context '編集成功のテスト' do
+      before do 
+        @book_old_title = book.title
+        @book_old_body = book.body
+        fill_in 'book[title]', with: Faker::Lorem.characters(number: 4)
+        fill_in 'book[body]', with: Faker::Lorem.characters(number: 19)
+        click_button 'Update Book'
+      end
+      
+      it 'titleが正しく更新される' do
+        expect(book.reload.title).not_to eq @book_old_title
+      end
+      it 'bodyが正しく更新される' do
+        expect(book.reload.body).not_to eq @book_old_body
+      end
+      it 'リダイレクト先が、更新した投稿の詳細画面になっている' do
+        expect(current_path).to eq '/books/' + book.id.to_s
+        expect(page).to have_content 'Book detail'
+      end
+    end #編集成功のテスト
+  end #自分の投稿編集画面のテスト
 
 
 end #ユーザログイン後のテスト
